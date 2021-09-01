@@ -33,4 +33,17 @@ class Validation
 	//--------------------------------------------------------------------
 	// Rules
 	//--------------------------------------------------------------------
+	public $product = [
+		'product_name'         => 'required',
+		'product_price'      	=> 'required'
+	];
+
+	public $product_errors = [
+		'product_name'=> [
+			'required' 	=> 'Nama wajib diisi.'
+		],
+		'product_price'=> [
+			'required' 	=> 'Status wajib diisi.'
+		]
+	];
 }

@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
-use App\Models\Product_Model;
 
 class Product extends ResourceController
 {
@@ -18,16 +17,42 @@ class Product extends ResourceController
     {
         return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua data", "data" => $this->model->findAll()], 200);
     }
-    public function save()
+    public function create()
     {
-        $json = $this->request->getJSON();
-        $data = [
-            'product_name' => $json->product_name,
-            'product_price' => $json->product_price
-        ];
-        // var_dump($data);
-        // die;
-        $this->model->insert($data);
+        $validation =  \Config\Services::validation();
+
+        if($this->request->getJSON()) {
+            $json = $this->request->getJSON();
+            $data = [
+                'product_name' => $json->product_name,
+                'product_price' => $json->product_price
+            ];
+        } else {
+            $data = [
+                'product_name' => $this->request->getPost('product_name'),
+                'product_price' => $this->request->getPost('product_price')
+            ];
+        }
+
+        if($validation->run($data, 'product') == FALSE){
+            $response = [
+                'status' => false,
+                'message' => 'Validasi gagal',
+                'data' => $validation->getErrors(),
+            ];
+            return $this->respond($response, 200);
+        } else {
+            $simpan = $this->model->insert($data);
+            if($simpan){
+                $response = [
+                    'status' => true,
+                    'message' => 'Created product successfully',
+                    'data' => [],
+                ];
+                return $this->respond($response, 200);
+            }
+        } 
+        
     }
     public function update($id = null)
     {
