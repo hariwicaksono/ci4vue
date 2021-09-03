@@ -104,9 +104,7 @@
                                     </v-card-title>
                                     <v-card-text>
                                         <v-container>
-                                        <v-alert v-if="notifType != ''" dense
-                                        type="error"
-                                        >{{notifMessage}}</v-alert>
+                                        <v-alert v-if="notifType != ''" dismissible type="error">{{notifMessage}}</v-alert>
                                         
                                             <v-row>
                                                 <v-col cols="12">
@@ -123,7 +121,7 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
-                                        <v-btn color="blue darken-1" text @click="modalAdd = false">Close</v-btn>
+                                        <v-btn color="blue darken-1" text @click="modalAdd = false" >Close</v-btn>
                                          <v-btn color="primary" dark @click="saveProduct" :loading="loading">Save</v-btn>
                                     </v-card-actions>
                                 </v-card>
@@ -249,6 +247,13 @@
             this.getProducts();
         },
         methods: {
+            cleanNotif: function() {
+                this.notifMessage = "";
+                this.notifType = "";
+            },
+            cleanFormLogin: function() {
+                this.cleanNotif()
+            },
             // Get Product
             getProducts: function() {
                 this.loading = true;
@@ -266,6 +271,7 @@
             // Save Product
             saveProduct: function() {
                 this.loading = true;
+                this.cleanFormLogin();
                 axios({
                     method: 'post',
                     url: '/product/save',
@@ -279,7 +285,7 @@
                     })
                     .then(res => {
                         // handle success
-                        this.isLoading = false
+                        this.loading = false
                         var data = res.data;
                       
                             if (data.status == false) {
