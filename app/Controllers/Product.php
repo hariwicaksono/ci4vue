@@ -46,7 +46,7 @@ class Product extends ResourceController
             if($simpan){
                 $response = [
                     'status' => true,
-                    'message' => 'Created product successfully',
+                    'message' => 'Produk berhasil ditambahkan',
                     'data' => [],
                 ];
                 return $this->respond($response, 200);
@@ -54,15 +54,43 @@ class Product extends ResourceController
         } 
         
     }
-    public function update($id = null)
-    {
-        $json = $this->request->getJSON();
-        $data = [
-            'product_name' => $json->product_name,
-            'product_price' => $json->product_price
+    public function update($id = NULL)
+{
+    $validation =  \Config\Services::validation();
+ 
+    // $name   = $this->request->getRawInput('category_name');
+    // $status = $this->request->getRawInput('category_status');
+ 
+    $data = $this->request->getRawInput();
+ 
+    // $data = [
+    //     'category_name' => $name,
+    //     'category_status' => $status 
+    // ];
+ 
+    if($validation->run($data, 'product') == FALSE){
+ 
+        $response = [                                                                                       
+            'status' => false,
+            'message' => 'Validasi gagal',
+            'data' => $validation->getErrors(),
         ];
-        $this->model->update($id, $data);
+        return $this->respond($response, 200);
+ 
+    } else {
+ 
+        $simpan = $this->model->update($id,$data);
+        if($simpan){
+            $response = [
+                'status' => true,
+                'message' => 'Produk berhasil diperbarui',
+                'data' => [],
+            ];
+            return $this->respond($response, 200);
+        } 
+         
     }
+}
     public function delete($id = null)
     {
         $this->model->delete($id);

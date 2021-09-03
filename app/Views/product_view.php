@@ -31,7 +31,7 @@
                             <v-card-title>
                                 Products
                                 <!-- Button Add New Product -->
-                                 <v-btn color="primary" dark @click="modalAdd = true">Add New</v-btn>
+                                 <v-btn color="primary" dark @click="modalAddOpen">Add New</v-btn>
                                 <v-spacer></v-spacer>
                                 <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line
                                     hide-details>
@@ -99,20 +99,20 @@
                         <v-row justify="center">
                             <v-dialog v-model="modalAdd" persistent max-width="600px">
                                 <v-card>
+                                <v-form ref="form" v-model="valid">
                                     <v-card-title>
                                         <span class="text-h5">Add Product</span>
                                     </v-card-title>
                                     <v-card-text>
                                         <v-container>
-                                        <v-alert v-if="notifType != ''" dismissible type="error">{{notifMessage}}</v-alert>
-                                        
+                                        <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
                                             <v-row>
                                                 <v-col cols="12">
-                                                    <v-text-field label="Product Name*" v-model="productName" required>
+                                                    <v-text-field label="Product Name*" v-model="productName" :rules="textRules" required>
                                                     </v-text-field>
                                                 </v-col>
                                                 <v-col cols="12">
-                                                    <v-text-field label="Price*" v-model="productPrice" required>
+                                                    <v-text-field label="Price*" v-model="productPrice" :rules="textRules" required>
                                                     </v-text-field>
                                                 </v-col>
                                             </v-row>
@@ -121,9 +121,10 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
-                                        <v-btn color="blue darken-1" text @click="modalAdd = false" >Close</v-btn>
+                                        <v-btn color="blue darken-1" text @click="modalAddClose" >Close</v-btn>
                                          <v-btn color="primary" dark @click="saveProduct" :loading="loading">Save</v-btn>
                                     </v-card-actions>
+                                </v-form>
                                 </v-card>
                             </v-dialog>
                         </v-row>
@@ -194,7 +195,21 @@
                     </template>              
                     <!-- End Modal Delete Product -->
                      
-                                
+                    <v-snackbar
+                    v-model="snackbar" absolute top centered color="success" :timeout="timeout"
+                    >
+                    {{ notifMessage }}
+
+                    <template v-slot:action="{ attrs }">
+                        <v-btn
+                        text
+                        v-bind="attrs"
+                        @click="snackbar = false"
+                        >
+                        Close
+                        </v-btn>
+                    </template>
+                    </v-snackbar>            
                 </v-container>
             </v-main>
         </v-app>
@@ -239,12 +254,19 @@
             productIdDelete: '',
             productNameDelete: '',
             loading: true,
+            valid: true,
+            textRules: [],
+            emailRules: [],
             notifMessage: "",
             notifType: "",
+            snackbar: false,
+            timeout: 2000,
         },
         created: function() {
             axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
             this.getProducts();
+        },
+        watch: {
         },
         methods: {
             cleanNotif: function() {
@@ -254,9 +276,28 @@
             cleanFormLogin: function() {
                 this.cleanNotif()
             },
+            modalAddOpen: function()
+            {
+                this.modalAdd = true;
+                this.notifType = "";
+                this.textRules = [
+                    v => !!v || 'Field is required',
+                    //v => v.length <= 10 || 'Name must be less than 10 characters',
+                ];
+                this.emailRules = [
+                    v => !!v || 'E-mail is required',
+                    v => /.+@.+/.test(v) || 'E-mail must be valid',
+                ];
+            },
+            modalAddClose: function()
+            {
+                this.modalAdd = false;
+                this.$refs.form.resetValidation();
+            },
             // Get Product
             getProducts: function() {
                 this.loading = true;
+                this.notifMessage = "";
                 axios.get('product/getproduct')
                     .then(res => {
                         // handle success
@@ -271,7 +312,6 @@
             // Save Product
             saveProduct: function() {
                 this.loading = true;
-                this.cleanFormLogin();
                 axios({
                     method: 'post',
                     url: '/product/save',
@@ -289,15 +329,19 @@
                         var data = res.data;
                       
                             if (data.status == false) {
-                                this.notifType = "alert-danger";
+                                this.notifType = "error";
                                 this.notifMessage = data.message;
-                                this.loading = false
+                                this.loading = false;
                                 this.modalAdd = true;
+                                this.$refs.form.validate();
                             } else {
+                                this.snackbar = true;
+                                this.notifMessage = data.message;
                                 this.getProducts();
                                 this.productName = '';
                                 this.productPrice = '';
                                 this.modalAdd = false;
+                                this.$refs.form.resetValidation();
                             }
                         
                        
@@ -326,8 +370,12 @@
                     })
                     .then(res => {
                         // handle success
+                        var data = res.data;
+                        this.snackbar = true;
+                        this.notifMessage = res.data.message;
                         this.getProducts();
                         this.modalEdit = false;
+                        console.log(res.data.message);
                     })
                     .catch(err => {
                         // handle error

@@ -33,7 +33,7 @@ $routes->setAutoRoute(true);
 // route since we don't have to scan directories.
 $routes->get('/', 'Product::index');
 $routes->post('product/save', 'Product::create');
-$routes->put('product/update', 'Product::update');
+$routes->put('product/update/(:segment)', 'Product::update/$1');
 $routes->delete('product/delete', 'Product::delete');
 
 /**
