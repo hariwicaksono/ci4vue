@@ -23,6 +23,14 @@ class Product extends Migration
 				'type' => 'INT',
 				'constraint' => 11
 			],
+			'product_image' => [
+				'type' => 'VARCHAR',
+				'constraint' => '255'
+			],
+			'active' => [
+				'type' => 'INT',
+				'constraint' => 11
+			]
 		]);
 
 		$this->forge->addKey('product_id', true);

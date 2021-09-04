@@ -39,18 +39,21 @@
                             </v-card-title>
 
 
-                            <v-data-table :headers="headers" :items="products" :items-per-page="5" :loading="loading"
-                                :search="search" class="elevation-1" loading-text="Loading... Please wait">
+                            <v-data-table :headers="headers" :items="products" :items-per-page="10" :loading="loading"
+                                :search="search" class="elevation-1" loading-text="Loading... Please wait" dense>
                                 <template v-slot:item="row">
                                     <tr>
                                         <td>{{row.item.product_id}}</td>
                                         <td>{{row.item.product_name}}</td>
                                         <td>{{row.item.product_price}}</td>
                                         <td>
-                                            <v-icon small class="mr-2" @click="editItem(row.item)">
+                                        <v-switch v-model="row.item.active" value="active" false-value="0" true-value="1" color="success" value="success" fluid @click="activeItem(row.item)"></v-switch>
+                                        </td>
+                                        <td>
+                                            <v-icon class="mr-2" @click="editItem(row.item)">
                                                  mdi-pencil
                                             </v-icon>
-                                            <v-icon small @click="deleteItem(row.item)">
+                                            <v-icon color="red" @click="deleteItem(row.item)">
                                                 mdi-delete
                                             </v-icon>
                                         </td>
@@ -97,7 +100,7 @@
                     <!-- Modal Save Product -->
                     <template>
                         <v-row justify="center">
-                            <v-dialog v-model="modalAdd" persistent max-width="600px">
+                            <v-dialog v-model="modalAdd" persistent max-width="800px">
                                 <v-card>
                                 <v-form ref="form" v-model="valid">
                                     <v-card-title>
@@ -107,6 +110,19 @@
                                         <v-container>
                                         <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
                                             <v-row>
+                                                <v-col cols="12">
+                                                <v-file-input
+                                                clearable="false"
+                                                    v-model="foto"
+                                                    accept="image/png, image/jpeg, image/bmp"
+                                                    placeholder="Pick an avatar"
+                                                    prepend-icon="mdi-camera"
+                                                    label="Avatar"
+                                                    @change="readFotoReg(event)"
+                                                    clearable="false"
+                                                ></v-file-input>
+                                                <img id='outputFotoReg' style="width: 100px;">
+                                                </v-col>
                                                 <v-col cols="12">
                                                     <v-text-field label="Product Name*" v-model="productName" :rules="textRules" required>
                                                     </v-text-field>
@@ -137,19 +153,20 @@
                         <v-row justify="center">
                             <v-dialog v-model="modalEdit" persistent max-width="600px">
                                 <v-card>
+                                <v-form ref="form" v-model="valid">
                                     <v-card-title>
                                         <span class="text-h5">Edit Product</span>
                                     </v-card-title>
                                     <v-card-text>
                                         <v-container>
+                                        <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
                                             <v-row>
-
                                                 <v-col cols="12">
-                                                    <v-text-field label="Product Name*" v-model="productNameEdit"
+                                                    <v-text-field label="Product Name*" v-model="productNameEdit" :rules="textRules"
                                                         required></v-text-field>
                                                 </v-col>
                                                 <v-col cols="12">
-                                                    <v-text-field label="Price*" v-model="productPriceEdit" required>
+                                                    <v-text-field label="Price*" v-model="productPriceEdit" :rules="textRules" required>
                                                     </v-text-field>
                                                 </v-col>
 
@@ -159,9 +176,10 @@
                                     </v-card-text>
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
-                                        <v-btn color="blue darken-1" text @click="modalEdit = false">Close</v-btn>
-                                         <v-btn color="blue darken-1" text @click="updateProduct">Update</v-btn>
+                                        <v-btn color="blue darken-1" text @click="modalEditClose">Close</v-btn>
+                                         <v-btn color="primary darken-1" dark @click="updateProduct" :loading="loading">Update</v-btn>
                                     </v-card-actions>
+                                </v-form>
                                 </v-card>
                             </v-dialog>
                         </v-row>
@@ -174,20 +192,12 @@
                         <v-row justify="center">
                             <v-dialog v-model="modalDelete" persistent max-width="600px">
                                 <v-card>
-                                    <v-card-title>
-                                        <span class="text-h5">Delete</span>
-                                    </v-card-title>
-                                    <v-card-text>
-                                        <v-container>
-                                            <v-row>
-                                               <h3>Are sure want to delete <strong>"{{ productNameDelete }}"</strong> ?</h3>
-                                            </v-row>
-                                        </v-container>
-                                    </v-card-text>
+                                    <v-card-title class="text-h5">Are you sure you want to delete this item?</v-card-title>
                                     <v-card-actions>
                                         <v-spacer></v-spacer>
                                         <v-btn color="blue darken-1" text @click="modalDelete = false">No</v-btn>
-                                         <v-btn color="blue darken-1" text @click="deleteProduct">Yes</v-btn>
+                                         <v-btn color="blue darken-1" text @click="deleteProduct" :loading="loading">Yes</v-btn>
+                                        <v-spacer></v-spacer>
                                     </v-card-actions>
                                 </v-card>
                             </v-dialog>
@@ -195,10 +205,9 @@
                     </template>              
                     <!-- End Modal Delete Product -->
                      
-                    <v-snackbar
-                    v-model="snackbar" absolute top centered color="success" :timeout="timeout"
+                    <v-snackbar v-model="snackbar" absolute top centered :color="snackbarType" :timeout="timeout"
                     >
-                    {{ notifMessage }}
+                    {{snackbarMessage}}
 
                     <template v-slot:action="{ attrs }">
                         <v-btn
@@ -219,25 +228,39 @@
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-    new Vue({
-        el: '#app',
-        vuetify: new Vuetify(),
-        data: {
+        var readFotoReg = function(event) {
+            var input = event.target;
+            // vue.fotoReg = input.files[0]
+            var reader = new FileReader();
+            reader.onload = function() {
+                var dataURL = reader.result;
+                var output = document.getElementById('outputFotoReg');
+                output.src = dataURL;
+            };
+            reader.readAsDataURL(input.files[0]);
+            //vue.uploadMedia(input.files[0])
+        };
+        var vue = null;
+        var dataVue = {
             search: '',
             headers: [{
                     text: 'ID',
                     value: 'product_id'
                 },
                 {
-                    text: 'Nama Produk',
+                    text: 'INFO PRODUK',
                     value: 'product_name'
                 },
                 {
-                    text: 'Harga',
+                    text: 'HARGA',
                     value: 'product_price'
                 },
                 {
-                    text: 'Aksi',
+                    text: 'AKTIF',
+                    value: 'active'
+                },
+                {
+                    text: 'ATUR',
                     value: 'actions',
                     sortable: false
                 },
@@ -246,6 +269,9 @@
             modalAdd: false,
             productName: '',
             productPrice: '',
+            productImage: null,
+            foto: null,
+            active: '',
             modalEdit: false,
             productIdEdit: '',
             productNameEdit: '',
@@ -260,22 +286,17 @@
             notifMessage: "",
             notifType: "",
             snackbar: false,
-            timeout: 2000,
-        },
-        created: function() {
+            timeout: 4000,
+            snackbarType: "",
+            snackbarMessage: "",
+        }
+        var createdVue = function() {
             axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
             this.getProducts();
-        },
-        watch: {
-        },
-        methods: {
-            cleanNotif: function() {
-                this.notifMessage = "";
-                this.notifType = "";
-            },
-            cleanFormLogin: function() {
-                this.cleanNotif()
-            },
+        }
+        var mountedVue = function() {}
+        var watchVue = {}
+        var methodsVue = {
             modalAddOpen: function()
             {
                 this.modalAdd = true;
@@ -297,7 +318,6 @@
             // Get Product
             getProducts: function() {
                 this.loading = true;
-                this.notifMessage = "";
                 axios.get('product/getproduct')
                     .then(res => {
                         // handle success
@@ -318,6 +338,7 @@
                     data: {
                         product_name: this.productName,
                         product_price: this.productPrice,
+                        product_image: this.foto,
                     },
                     headers: {
                         "Content-Type": "application/json"
@@ -327,24 +348,22 @@
                         // handle success
                         this.loading = false
                         var data = res.data;
-                      
-                            if (data.status == false) {
-                                this.notifType = "error";
-                                this.notifMessage = data.message;
-                                this.loading = false;
-                                this.modalAdd = true;
-                                this.$refs.form.validate();
-                            } else {
+                            if (data.status == true) {
                                 this.snackbar = true;
-                                this.notifMessage = data.message;
+                                this.snackbarType = "success";
+                                this.snackbarMessage = data.message;
                                 this.getProducts();
                                 this.productName = '';
                                 this.productPrice = '';
+                                this.productImage = '';
                                 this.modalAdd = false;
                                 this.$refs.form.resetValidation();
+                            } else {
+                                this.notifType = "error";
+                                this.notifMessage = data.message;
+                                this.modalAdd = true;
+                                this.$refs.form.validate();
                             }
-                        
-                       
                     })
                     .catch(err => {
                         // handle error
@@ -356,30 +375,56 @@
             // Get Item Edit Product
             editItem: function(product) {
                 this.modalEdit = true;
+                this.notifType = "";
+                this.textRules = [
+                    v => !!v || 'Field is required',
+                    //v => v.length <= 10 || 'Name must be less than 10 characters',
+                ];
+                this.emailRules = [
+                    v => !!v || 'E-mail is required',
+                    v => /.+@.+/.test(v) || 'E-mail must be valid',
+                ];
                 this.productIdEdit = product.product_id;
                 this.productNameEdit = product.product_name;
                 this.productPriceEdit = product.product_price;
             },
+            modalEditClose: function()
+            {
+                this.modalEdit = false;
+                this.$refs.form.resetValidation();
+            },
 
             //Update Product
             updateProduct: function() {
+                this.loading = true;
                 axios.put(`product/update/${this.productIdEdit}`, {
-                        product_id: this.productIdEdit,
                         product_name: this.productNameEdit,
                         product_price: this.productPriceEdit
                     })
                     .then(res => {
                         // handle success
+                        this.loading = false;
                         var data = res.data;
-                        this.snackbar = true;
-                        this.notifMessage = res.data.message;
-                        this.getProducts();
-                        this.modalEdit = false;
-                        console.log(res.data.message);
+                            if (data.status == true) {
+                                this.snackbar = true;
+                                this.snackbarType = "success";
+                                this.snackbarMessage = data.message;
+                                this.getProducts();
+                                this.productName = '';
+                                this.productPrice = '';
+                                this.modalEdit = false;
+                                this.$refs.form.resetValidation();
+                            } else {
+                                this.notifType = "error";
+                                this.notifMessage = data.message;
+                                this.modalEdit = true;
+                                this.$refs.form.validate();
+                            }
                     })
                     .catch(err => {
                         // handle error
-                        console.log(err);
+                        console.log(err.response);
+                        this.loading = false
                     })
             },
 
@@ -392,20 +437,69 @@
 
             // Delete Product
             deleteProduct: function() {
+                this.loading = true;
                 axios.delete(`product/delete/${this.productIdDelete}`)
                     .then(res => {
                         // handle success
-                        this.getProducts();
-                        this.modalDelete = false;
+                        this.loading = false;
+                        var data = res.data;
+                            if (data.status == true) {
+                                this.snackbar = true;
+                                this.snackbarType = "success";
+                                this.snackbarMessage = data.message;
+                                this.getProducts();
+                                this.modalDelete = false;
+                            } else {
+                                this.notifType = "error";
+                                this.notifMessage = data.message;
+                                this.modalDelete = true;
+                            }
                     })
                     .catch(err => {
                         // handle error
                         console.log(err);
+                        this.loading = false;
                     })
-            }
+            },
 
-        },
+            // Set Item Active Product
+            activeItem: function(product) {
+                this.loading = true;
+                this.productIdEdit = product.product_id;
+                this.active = product.active;
+                axios.put(`productactive/update/${this.productIdEdit}`, {
+                        active: this.active,
+                    })
+                    .then(res => {
+                        // handle success
+                        this.loading = false;
+                        var data = res.data;
+                            if (data.status == true) {
+                                this.snackbar = true;
+                                this.snackbarType = "success";
+                                this.snackbarMessage = data.message;
+                                this.getProducts();
+                            } 
+                    })
+                    .catch(err => {
+                        // handle error
+                        console.log(err.response);
+                        this.loading = false
+                    })
+            },
 
+        }
+    </script>
+    <?= $this->renderSection('js') ?>
+    <script>
+    new Vue({
+        el: '#app',
+        vuetify: new Vuetify(),
+        data: dataVue,
+        mounted: mountedVue,
+        created: createdVue,
+        watch: watchVue,
+        methods: methodsVue
     })
     </script>
 </body>

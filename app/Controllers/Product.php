@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -57,16 +56,16 @@ class Product extends ResourceController
     public function update($id = NULL)
 {
     $validation =  \Config\Services::validation();
- 
-    // $name   = $this->request->getRawInput('category_name');
-    // $status = $this->request->getRawInput('category_status');
- 
-    $data = $this->request->getRawInput();
- 
-    // $data = [
-    //     'category_name' => $name,
-    //     'category_status' => $status 
-    // ];
+
+    if($this->request->getJSON()) {
+        $json = $this->request->getJSON();
+        $data = [
+            'product_name' => $json->product_name,
+            'product_price' => $json->product_price
+        ];
+    } else {
+        $data = $this->request->getRawInput();
+    }
  
     if($validation->run($data, 'product') == FALSE){
  
@@ -93,6 +92,22 @@ class Product extends ResourceController
 }
     public function delete($id = null)
     {
-        $this->model->delete($id);
+        $hapus = $this->model->find($id);
+        if($hapus){
+            $this->model->delete($id);
+            $response = [
+                'status' => true,
+                'message' => 'Produk berhasil dihapus',
+                'data' => [],
+            ];
+            return $this->respond($response, 200);
+        } else {
+            $response = [
+                'status' => false,
+                'message' => 'Gagal menghapus',
+                'data' => [],
+            ];
+            return $this->respond($response, 200);
+        }
     }
 }
