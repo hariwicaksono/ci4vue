@@ -111,8 +111,7 @@
                                         <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
                                             <v-row>
                                                 <v-col cols="12">
-                                                <v-file-input
-                                                clearable="false"
+                                                <!--<v-file-input
                                                     v-model="foto"
                                                     accept="image/png, image/jpeg, image/bmp"
                                                     placeholder="Pick an avatar"
@@ -120,8 +119,20 @@
                                                     label="Avatar"
                                                     @change="readFotoReg(event)"
                                                     clearable="false"
-                                                ></v-file-input>
-                                                <img id='outputFotoReg' style="width: 100px;">
+                                                ></v-file-input>-->
+                                                <v-image-input
+                                                v-model="foto"
+                                                :image-quality="0.85"
+                                                :clearable="true"
+                                                :hide-actions="true"
+                                                :debounce="150"
+                                                :image-width="150"
+                                                :image-height="150"
+                                                image-format="jpg,jpeg,png"
+                                                overlay-padding="1px"
+                                                @file-info="onFileInfo"
+                                                />
+                                                <img id='outputFotoReg' ref="anyName" style="width:100px;">
                                                 </v-col>
                                                 <v-col cols="12">
                                                     <v-text-field label="Product Name*" v-model="productName" :rules="textRules" required>
@@ -218,7 +229,17 @@
                         Close
                         </v-btn>
                     </template>
-                    </v-snackbar>            
+                    </v-snackbar>   
+                    
+                    <v-snackbar
+				v-model="ui.snackbar.fileInfo"
+				:timeout="5000"
+			>
+				<pre
+					v-if="fileInfo"
+				>{{ JSON.stringify(fileInfo, null, '  ') }}</pre>
+			</v-snackbar>
+                     
                 </v-container>
             </v-main>
         </v-app>
@@ -226,20 +247,9 @@
      
     <script src="https://vuejs.org/js/vue.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="https://unpkg.com/vuetify-image-input"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
-        var readFotoReg = function(event) {
-            var input = event.target;
-            // vue.fotoReg = input.files[0]
-            var reader = new FileReader();
-            reader.onload = function() {
-                var dataURL = reader.result;
-                var output = document.getElementById('outputFotoReg');
-                output.src = dataURL;
-            };
-            reader.readAsDataURL(input.files[0]);
-            //vue.uploadMedia(input.files[0])
-        };
         var vue = null;
         var dataVue = {
             search: '',
@@ -289,6 +299,14 @@
             timeout: 4000,
             snackbarType: "",
             snackbarMessage: "",
+            outputFotoReg: null,
+            fileInfo: null,
+            ui: {
+					drawer: true,
+					snackbar: {
+						fileInfo: false,
+					},
+				},
         }
         var createdVue = function() {
             axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -297,6 +315,11 @@
         var mountedVue = function() {}
         var watchVue = {}
         var methodsVue = {
+            onFileInfo(value) {
+				this.fileInfo = value.name;
+				this.ui.snackbar.fileInfo = true;
+                this.imageUpload(value.name);
+			},
             modalAddOpen: function()
             {
                 this.modalAdd = true;
@@ -312,8 +335,12 @@
             },
             modalAddClose: function()
             {
+                this.productName = '';
+                this.productPrice = '';
+                this.foto = null;
                 this.modalAdd = false;
                 this.$refs.form.resetValidation();
+                this.$refs.anyName.reset();
             },
             // Get Product
             getProducts: function() {
@@ -487,7 +514,53 @@
                         this.loading = false
                     })
             },
-
+            readFotoReg: function(event) {
+                var input = event.target;
+                // vue.fotoReg = input.files[0]
+                var reader = new FileReader();
+                reader.onload = function() {
+                    var dataURL = reader.result;
+                    var output = document.getElementById('outputFotoReg');
+                    output.src = dataURL;
+                };
+                var fileName = input.files[0].name;
+                reader.readAsDataURL(input.files[0]);
+                //this.imageUpload(input.files[0],fileName)
+            },
+            imageUpload: function(file) {
+                var formData = new FormData()
+                formData.append('foto',file);
+                axios({
+                    method: 'post',
+                    url: '/imageupload',
+                    data: formData,
+                    headers: {
+                        "Content-Type": "multipart/form-data"
+                    },
+                    onUploadProgress: function(progressEvent) {
+                        var percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total)
+                        this.upload_precentage_progress = percentCompleted
+                    }
+                    })
+                    .then(res => {
+                        // handle success
+                        this.loading = false
+                        var data = res.data;
+                            if (data.status == true) {
+                                this.snackbar = true;
+                                this.snackbarType = "success";
+                                this.snackbarMessage = data.message;
+                            } else {
+                                this.notifType = "error";
+                                this.notifMessage = data.message;
+                            }
+                    })
+                    .catch(err => {
+                        // handle error
+                        console.log(err.response);
+                        this.loading = false
+                    })
+            },
         }
     </script>
     <?= $this->renderSection('js') ?>
