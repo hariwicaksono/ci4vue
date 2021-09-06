@@ -27,12 +27,14 @@ class Product extends ResourceController
                 'product_name' => $json->product_name,
                 'product_price' => $json->product_price,
                 'product_image' => $json->product_image,
+                'active' => 1
             ];
         } else {
             $data = [
                 'product_name' => $this->request->getPost('product_name'),
                 'product_price' => $this->request->getPost('product_price'),
                 'product_image' => $this->request->getPost('product_image'),
+                'active' => 1
             ];
         }
 
@@ -95,15 +97,18 @@ class Product extends ResourceController
 }
     public function delete($id = null)
     {
-        $hapus = $this->model->find($id);
         $media = new Media_Model();
+        $hapus = $this->model->find($id);
         $gambar = $media->find($hapus['product_image']);
-        if($gambar['media_path']) {
-            $gambar->delete($gambar['media_id']);
-            unlink($gambar['media_path']);
-         }
         if($hapus){
-            $this->model->delete($id);
+            if(empty($gambar)) {
+                $this->model->delete($id);
+            } else {
+                $this->model->delete($id);
+                $media->delete($gambar['media_id']);
+                unlink($gambar['media_path']);
+            }
+           
             $response = [
                 'status' => true,
                 'message' => 'Produk berhasil dihapus',

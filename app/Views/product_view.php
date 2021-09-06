@@ -28,10 +28,12 @@
                     <!-- Table List Product -->
                     <template>
                         <v-card>
+                            <v-card-text>
+                            <h1>Daftar Produk</h1>
+                            </v-card-text>
                             <v-card-title>
-                                Products
                                 <!-- Button Add New Product -->
-                                 <v-btn color="primary" dark @click="modalAddOpen">Add New</v-btn>
+                                 <v-btn color="primary" dark @click="modalAddOpen">Tambah Produk</v-btn>
                                 <v-spacer></v-spacer>
                                 <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
                                 </v-text-field>
@@ -42,12 +44,12 @@
                                 <template v-slot:item="row">
                                     <tr>
                                         <td>{{row.item.product_id}}</td>
-                                        <td><v-img :src="row.item.product_image" class="me-3" width="60" style="float:left;"></v-img>
+                                        <td><v-avatar size="60px" rounded style="float:left;"><img :src="row.item.product_image" class="me-3"></img></v-avatar>
                                             <h3>{{row.item.product_name}}</h3>
                                         </td>
                                         <td>{{row.item.product_price}}</td>
                                         <td>
-                                            <v-switch v-model="row.item.active" value="active" false-value="0" true-value="1" color="success" value="success" fluid @click="activeItem(row.item)"></v-switch>
+                                            <v-switch v-model="row.item.active" value="active" false-value="0" true-value="1" color="success" value="success" inset @click="activeItem(row.item)"></v-switch>
                                         </td>
                                         <td>
                                             <v-icon class="mr-2" @click="editItem(row.item)">
@@ -106,23 +108,31 @@
                                     <v-btn icon dark @click="modalAddClose">
                                         <v-icon>mdi-close</v-icon>
                                     </v-btn>
-                                    <v-toolbar-title>Settings</v-toolbar-title>
+                                    <v-toolbar-title>Tambah Produk</v-toolbar-title>
                                     <v-spacer></v-spacer>
                                     <v-toolbar-items>
                                         <v-btn dark text @click="saveProduct" :loading="loading" >
-                                        Simpan
+                                        <v-icon>mdi-content-save</v-icon> Simpan
                                         </v-btn>
                                     </v-toolbar-items>
                                     </v-toolbar>
                                     <v-form ref="form" v-model="valid">
                                         <v-card-title>
-                                            <span class="text-h5">Add Product</span>
+                                            <small>*indicates required field</small>
                                         </v-card-title>
                                         <v-card-text>
                                             <v-container :fluid="true">
                                                 <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
+                                                
                                                 <v-row>
                                                     <v-col cols="12">
+                                                        <v-text-field label="Nama Produk*" v-model="productName" :rules="textRules" required>
+                                                        </v-text-field>
+                                                        <v-text-field label="Harga*" v-model="productPrice" :rules="textRules" required>
+                                                        </v-text-field>
+                                                    </v-col>
+                                                    <v-col cols="12">
+                                                    <label>Gambar Produk</label>
                                                     <!--<v-file-input
                                                     v-model="foto"
                                                     accept="image/png, image/jpeg, image/bmp"
@@ -133,25 +143,12 @@
                                                     clearable="false"
                                                     ></v-file-input>
                                                     <img id='outputFotoReg' style="width:100px;">-->
-                                                    <v-image-input v-model="foto" :clearable="true" :hide-actions="false" :image-width="700" :image-height="700" image-format="jpg,jpeg,png" overlay-padding="50px" @input="onFileInfo" />    
-                                                    </v-col>
-                                                    <v-col cols="12">
-                                                        <v-text-field label="Product Name*" v-model="productName" :rules="textRules" required>
-                                                        </v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12">
-                                                        <v-text-field label="Price*" v-model="productPrice" :rules="textRules" required>
-                                                        </v-text-field>
+                                                    <v-image-input v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />    
                                                     </v-col>
                                                 </v-row>
                                             </v-container>
-                                            <small>*indicates required field</small>
+                                           
                                         </v-card-text>
-                                        <v-card-actions>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="blue darken-1" text @click="modalAddClose">Close</v-btn>
-                                             <v-btn color="primary" dark @click="saveProduct" :loading="loading">Save</v-btn>
-                                        </v-card-actions>
                                     </v-form>
                                 </v-card>
                             </v-dialog>
@@ -317,6 +314,7 @@
             snackbarMessage: '',
             outputFotoReg: null,
             fileInfo: null,
+            fileInfoMessage: '',
             ui: {
                 drawer: true,
                 snackbar: {
