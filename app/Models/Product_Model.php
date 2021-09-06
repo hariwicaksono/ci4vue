@@ -10,14 +10,19 @@ class Product_Model extends Model
     protected $primaryKey = 'product_id';
     protected $useAutoIncrement = true;
     protected $returnType     = 'array';
-    protected $allowedFields = ['product_name', 'product_price', 'active'];
+    protected $allowedFields = ['product_name', 'product_price', 'product_image', 'active'];
     //protected $validationRules    = [];
     //protected $validationMessages = [];
     //protected $skipValidation     = false;
 
-    public function updateCategory($data, $id)
+    public function getProduct()
     {
-        return $this->db->table($this->table)->update($data, ['product_id' => $id]);
+        $db      = \Config\Database::connect();
+        $builder = $db->table('product p');
+        $builder->select('p.*, m.media_path as product_image');
+        $builder->join('media m', 'm.media_id = p.product_image','left');
+        $builder->orderBy('p.product_id', 'ASC');
+        $query = $builder->get();
+        return $query->getResultArray();
     }
-
 }

@@ -2,6 +2,7 @@
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
+use App\Models\Media_Model;
 
 class Product extends ResourceController
 {
@@ -14,7 +15,7 @@ class Product extends ResourceController
     }
     public function getProduct()
     {
-        return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua data", "data" => $this->model->findAll()], 200);
+        return $this->respond(["status" => true, "message" => "berhasil mendapatkan semua data", "data" => $this->model->getProduct()], 200);
     }
     public function create()
     {
@@ -24,12 +25,14 @@ class Product extends ResourceController
             $json = $this->request->getJSON();
             $data = [
                 'product_name' => $json->product_name,
-                'product_price' => $json->product_price
+                'product_price' => $json->product_price,
+                'product_image' => $json->product_image,
             ];
         } else {
             $data = [
                 'product_name' => $this->request->getPost('product_name'),
-                'product_price' => $this->request->getPost('product_price')
+                'product_price' => $this->request->getPost('product_price'),
+                'product_image' => $this->request->getPost('product_image'),
             ];
         }
 
@@ -93,6 +96,12 @@ class Product extends ResourceController
     public function delete($id = null)
     {
         $hapus = $this->model->find($id);
+        $media = new Media_Model();
+        $gambar = $media->find($hapus['product_image']);
+        if($gambar['media_path']) {
+            $gambar->delete($gambar['media_id']);
+            unlink($gambar['media_path']);
+         }
         if($hapus){
             $this->model->delete($id);
             $response = [

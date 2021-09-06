@@ -11,7 +11,7 @@ class Product extends Migration
 		$this->forge->addField([
 			'product_id' => [
 				'type' => 'INT',
-				'constraint' => 5,
+				'constraint' => 11,
 				'unsigned' => true,
 				'auto_increment' => true,
 			],
@@ -24,8 +24,8 @@ class Product extends Migration
 				'constraint' => 11
 			],
 			'product_image' => [
-				'type' => 'VARCHAR',
-				'constraint' => '255'
+				'type' => 'INT',
+				'constraint' => 11
 			],
 			'active' => [
 				'type' => 'INT',
