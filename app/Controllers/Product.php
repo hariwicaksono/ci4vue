@@ -124,4 +124,72 @@ class Product extends ResourceController
             return $this->respond($response, 200);
         }
     }
+
+    public function setPrice($id = NULL)
+    {
+        
+        if($this->request->getJSON()) {
+            $json = $this->request->getJSON();
+            $data = [
+                'product_price' => $json->product_price,
+            ];
+        } else {
+            $input = $this->request->getRawInput();
+            $data = [
+                'product_price' => $input['product_price']
+            ];
+        }
+    
+        if ($data > 0) {
+            $this->model->update($id, $data);
+
+            $response = [
+                'status' => true,
+                'message' => 'Berhasil memperbarui data',
+                'data' => []
+            ];
+            return $this->respond($response, 200);
+        } else {
+            $response = [
+                'status' => false,
+                'message' => 'Gagal memperbarui data',
+                'data' => []
+            ];
+            return $this->respond($response, 200);
+        }
+    }
+
+    public function setActive($id = NULL)
+    {
+        
+        if($this->request->getJSON()) {
+            $json = $this->request->getJSON();
+            $data = [
+                'active' => $json->active,
+            ];
+        } else {
+            $input = $this->request->getRawInput();
+            $data = [
+                'active' => $input['active']
+            ];
+        }
+    
+        if ($data > 0) {
+            $this->model->update($id, $data);
+
+            $response = [
+                'status' => true,
+                'message' => 'Berhasil memperbarui data',
+                'data' => []
+            ];
+            return $this->respond($response, 200);
+        } else {
+            $response = [
+                'status' => false,
+                'message' => 'Gagal memperbarui data',
+                'data' => []
+            ];
+            return $this->respond($response, 200);
+        }
+    }
 }
