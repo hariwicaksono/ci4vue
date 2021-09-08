@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\RESTful\ResourceController;
@@ -21,7 +22,7 @@ class Product extends ResourceController
     {
         $validation =  \Config\Services::validation();
 
-        if($this->request->getJSON()) {
+        if ($this->request->getJSON()) {
             $json = $this->request->getJSON();
             $data = [
                 'product_name' => $json->product_name,
@@ -38,7 +39,7 @@ class Product extends ResourceController
             ];
         }
 
-        if($validation->run($data, 'product') == FALSE){
+        if ($validation->run($data, 'product') == FALSE) {
             $response = [
                 'status' => false,
                 'message' => 'Validasi gagal',
@@ -47,7 +48,7 @@ class Product extends ResourceController
             return $this->respond($response, 200);
         } else {
             $simpan = $this->model->insert($data);
-            if($simpan){
+            if ($simpan) {
                 $response = [
                     'status' => true,
                     'message' => 'Produk berhasil ditambahkan',
@@ -55,60 +56,58 @@ class Product extends ResourceController
                 ];
                 return $this->respond($response, 200);
             }
-        } 
-        
+        }
     }
     public function update($id = NULL)
-{
-    $validation =  \Config\Services::validation();
+    {
+        $validation =  \Config\Services::validation();
 
-    if($this->request->getJSON()) {
-        $json = $this->request->getJSON();
-        $data = [
-            'product_name' => $json->product_name,
-            'product_price' => $json->product_price
-        ];
-    } else {
-        $data = $this->request->getRawInput();
-    }
- 
-    if($validation->run($data, 'product') == FALSE){
- 
-        $response = [                                                                                       
-            'status' => false,
-            'message' => 'Validasi gagal',
-            'data' => $validation->getErrors(),
-        ];
-        return $this->respond($response, 200);
- 
-    } else {
- 
-        $simpan = $this->model->update($id,$data);
-        if($simpan){
+        if ($this->request->getJSON()) {
+            $json = $this->request->getJSON();
+            $data = [
+                'product_name' => $json->product_name,
+                'product_price' => $json->product_price,
+                'product_image' => $json->product_image,
+            ];
+        } else {
+            $data = $this->request->getRawInput();
+        }
+
+        if ($validation->run($data, 'product') == FALSE) {
+
             $response = [
-                'status' => true,
-                'message' => 'Produk berhasil diperbarui',
-                'data' => [],
+                'status' => false,
+                'message' => 'Validasi gagal',
+                'data' => $validation->getErrors(),
             ];
             return $this->respond($response, 200);
-        } 
-         
+        } else {
+
+            $simpan = $this->model->update($id, $data);
+            if ($simpan) {
+                $response = [
+                    'status' => true,
+                    'message' => 'Produk berhasil diperbarui',
+                    'data' => [],
+                ];
+                return $this->respond($response, 200);
+            }
+        }
     }
-}
     public function delete($id = null)
     {
-        $media = new Media_Model();
         $hapus = $this->model->find($id);
+        $media = new Media_Model();
         $gambar = $media->find($hapus['product_image']);
-        if($hapus){
-            if(empty($gambar)) {
+        if ($hapus) {
+            if (empty($gambar)) {
                 $this->model->delete($id);
             } else {
                 $this->model->delete($id);
                 $media->delete($gambar['media_id']);
                 unlink($gambar['media_path']);
             }
-           
+
             $response = [
                 'status' => true,
                 'message' => 'Produk berhasil dihapus',
@@ -127,8 +126,8 @@ class Product extends ResourceController
 
     public function setPrice($id = NULL)
     {
-        
-        if($this->request->getJSON()) {
+
+        if ($this->request->getJSON()) {
             $json = $this->request->getJSON();
             $data = [
                 'product_price' => $json->product_price,
@@ -139,7 +138,7 @@ class Product extends ResourceController
                 'product_price' => $input['product_price']
             ];
         }
-    
+
         if ($data > 0) {
             $this->model->update($id, $data);
 
@@ -161,8 +160,8 @@ class Product extends ResourceController
 
     public function setActive($id = NULL)
     {
-        
-        if($this->request->getJSON()) {
+
+        if ($this->request->getJSON()) {
             $json = $this->request->getJSON();
             $data = [
                 'active' => $json->active,
@@ -173,7 +172,7 @@ class Product extends ResourceController
                 'active' => $input['active']
             ];
         }
-    
+
         if ($data > 0) {
             $this->model->update($id, $data);
 

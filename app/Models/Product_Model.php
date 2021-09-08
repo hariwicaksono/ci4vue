@@ -19,7 +19,7 @@ class Product_Model extends Model
     {
         $db      = \Config\Database::connect();
         $builder = $db->table('product p');
-        $builder->select('p.*, m.media_path as product_image');
+        $builder->select('p.*, m.media_path');
         $builder->join('media m', 'm.media_id = p.product_image','left');
         $builder->orderBy('p.product_id', 'ASC');
         $query = $builder->get();

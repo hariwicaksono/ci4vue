@@ -35,7 +35,8 @@ class Validation
 	//--------------------------------------------------------------------
 	public $product = [
 		'product_name'         => 'required',
-		'product_price'      	=> 'required'
+		'product_price'      	=> 'required',
+		'product_image'      	=> 'required'
 	];
 
 	public $product_errors = [
@@ -43,7 +44,10 @@ class Validation
 			'required' 	=> 'Nama wajib diisi.'
 		],
 		'product_price'=> [
-			'required' 	=> 'Status wajib diisi.'
+			'required' 	=> 'Harga wajib diisi.'
+		],
+		'product_image'=> [
+			'required' 	=> 'Gambar wajib diisi.'
 		]
 	];
 }

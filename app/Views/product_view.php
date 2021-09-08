@@ -10,106 +10,120 @@
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@5.x/css/materialdesignicons.min.css" rel="stylesheet"> 
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">  
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+    <style>
+        html {
+            overflow-y: hidden;
+        }
+    </style>
 </head>
 
 <body>
     <div id="app">
         <v-app>
 
-            <v-app-bar app color="indigo" dark>
+            <v-app-bar app color="primary" dark elevation="2">
                 <v-app-bar-nav-icon @click.stop="sidebarMenu = !sidebarMenu"></v-app-bar-nav-icon>
-
                 <v-toolbar-title>Title</v-toolbar-title>
+                <v-spacer></v-spacer>
+                <v-btn @click="toggleTheme" color="primary" class="mr-2">{{buttonText}}</v-btn>
             </v-app-bar>
 
-            <v-navigation-drawer 
-            v-model="sidebarMenu" 
-            app
-            floating
-            :permanent="sidebarMenu"
-            :mini-variant.sync="mini"
-            >
-            <v-list dense color="indigo" dark>
-                <v-list-item>
-                    <v-list-item-action>
-                        <v-icon @click.stop="toggleMini = !toggleMini">mdi-chevron-left</v-icon>
-                    </v-list-item-action>
-                    <v-list-item-content>
-                        <v-list-item-title>
-                            <h3>Dashboard</h3>
-                        </v-list-item-title>
+            <v-navigation-drawer v-model="sidebarMenu" app floating :permanent="sidebarMenu" :mini-variant.sync="mini">
+                <v-list dense elevation="2">
+                    <v-list-item>
+                        <v-list-item-action>
+                            <v-icon @click.stop="toggleMini = !toggleMini">mdi-chevron-left</v-icon>
+                        </v-list-item-action>
+                        <v-list-item-content>
+                            <v-list-item-title>
+                                <h3>CI4Vue</h3>
+                            </v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+                <v-list-item class="px-2" @click="">
+                    <v-list-item-avatar>
+                        <v-icon>mdi-account-outline</v-icon>
+                    </v-list-item-avatar>
+                    <v-list-item-content class="text-truncate">
+                        itshop.id
                     </v-list-item-content>
                 </v-list-item>
-            </v-list>
-            <v-list-item class="px-2" @click="toggleMini = !toggleMini">
-                <v-list-item-avatar>
-                    <v-icon>mdi-account-outline</v-icon>
-                </v-list-item-avatar>
-                <v-list-item-content class="text-truncate">
-                    User
-                </v-list-item-content>
-                <v-btn icon small>
-                    <v-icon>mdi-chevron-left</v-icon>
-                </v-btn>
-            </v-list-item>
-            <v-divider></v-divider>
-            <v-list>
-               
-            </v-list>
-        </v-navigation-drawer>
+                <v-divider></v-divider>
+                <v-list>
+                    <v-list-item link href="/">
+                        <v-list-item-icon>
+                            <v-icon>mdi-home-outline</v-icon>
+                        </v-list-item-icon>
+
+                        <v-list-item-content>
+                            <v-list-item-title>Dashboard</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list>
+
+                <template v-slot:append>
+                    <v-divider></v-divider>
+                    <div class="pa-3 text-center">
+                        <span>&copy; {{ new Date().getFullYear() }}</span>
+                    </div>
+                </template>
+
+            </v-navigation-drawer>
 
             <v-main>
-                <v-container class="pt-0" fluid>
+                <v-container class="px-4 py-0 fill-height" fluid>
+                    <v-row class="fill-height">
+                        <v-col>
+                            <!-- Table List Product -->
+                            <v-card>
+                                <v-card-text>
+                                    <h1>Daftar Produk</h1>
+                                </v-card-text>
+                                <v-card-title>
+                                    <!-- Button Add New Product -->
+                                     <v-btn color="primary" dark @click="modalAddOpen">Tambah Produk</v-btn>
+                                    <v-spacer></v-spacer>
+                                    <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
+                                    </v-text-field>
+                                </v-card-title>
 
-                    <!-- Table List Product -->
-                    <template>
-                        <v-card>
-                            <v-card-text>
-                                <h1>Daftar Produk</h1>
-                            </v-card-text>
-                            <v-card-title>
-                                <!-- Button Add New Product -->
-                                 <v-btn color="primary" dark @click="modalAddOpen">Tambah Produk</v-btn>
-                                <v-spacer></v-spacer>
-                                <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
-                                </v-text-field>
-                            </v-card-title>
-
-
-                            <v-data-table :headers="headers" :items="products" :items-per-page="10" :loading="loading" :search="search" class="elevation-1" loading-text="Loading... Please wait" dense>
-                                <template v-slot:item="row">
-                                    <tr>
-                                        <td>{{row.item.product_id}}</td>
-                                        <td>
-                                            <v-avatar size="60px" rounded style="float:left;"><img :src="row.item.product_image" class="me-3"></img></v-avatar>
-                                            <h3>{{row.item.product_name}}</h3>
-                                        </td>
-                                        <td>
-                                            <v-edit-dialog :return-value.sync="row.item.product_price" @save="setPrice(row.item)" @cancel="" @open="" @close="">
-                                                {{row.item.product_price}}
-                                                <template v-slot:input>
-                                                    <v-text-field v-model="row.item.product_price" single-line></v-text-field>
-                                                </template>
-                                            </v-edit-dialog>
-                                        </td>
-                                        <td>
-                                            <v-switch v-model="row.item.active" value="active" false-value="0" true-value="1" color="success" value="success" inset @click="setActive(row.item)"></v-switch>
-                                        </td>
-                                        <td>
-                                            <v-icon class="mr-2" @click="editItem(row.item)">
-                                                 mdi-pencil
-                                            </v-icon>
-                                            <v-icon color="red" @click="deleteItem(row.item)">
-                                                mdi-delete
-                                            </v-icon>
-                                        </td>
-                                    </tr>
-                                </template>
-                                                    
-                            </v-data-table>
-                        </v-card>
-                                            
-                        <!--<v-simple-table>
+                                <v-data-table :headers="headers" :items="products" :items-per-page="10" :loading="loading" :search="search" class="elevation-1" loading-text="Loading... Please wait" dense>
+                                    <template v-slot:item="row">
+                                        <tr>
+                                            <td>{{row.item.product_id}}</td>
+                                            <td>
+                                                <v-avatar size="60px" rounded><img :src="row.item.media_path" /></v-avatar>
+                                            </td>
+                                            <td>
+                                                <h3>{{row.item.product_name}}</h3>
+                                            </td>
+                                            <td>
+                                                <v-edit-dialog :return-value.sync="row.item.product_price" @save="setPrice(row.item)" @cancel="" @open="" @close="">
+                                                    {{row.item.product_price}}
+                                                    <template v-slot:input>
+                                                        <v-text-field v-model="row.item.product_price" single-line></v-text-field>
+                                                    </template>
+                                                </v-edit-dialog>
+                                            </td>
+                                            <td>
+                                                <v-switch v-model="row.item.active" value="active" false-value="0" true-value="1" color="success" value="success" inset @click="setActive(row.item)"></v-switch>
+                                            </td>
+                                            <td>
+                                                <v-icon class="mr-2" @click="editItem(row.item)">
+                                                     mdi-pencil
+                                                </v-icon>
+                                                <v-icon color="red" @click="deleteItem(row.item)">
+                                                    mdi-delete
+                                                </v-icon>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                                        
+                                </v-data-table>
+                            </v-card>
+                                                
+                            <!--<v-simple-table>
                                     <template v-slot:default>
                                         <thead>
                                                 <tr>
@@ -136,48 +150,45 @@
                                             </tbody>
                                         </template>
                                 </v-simple-table>-->
-                         
+                            <!-- End Table List Product -->
 
-                    </template>
-                                    
-                    <!-- End Table List Product -->
-                                     
-                                    
-                    <!-- Modal Save Product -->
-                    <template>
-                        <v-row justify="center">
-                            <v-dialog v-model="modalAdd" fullscreen hide-overlay transition="dialog-bottom-transition">
-                                <v-card>
-                                    <v-toolbar dark color="primary">
-                                        <v-btn icon dark @click="modalAddClose">
-                                            <v-icon>mdi-close</v-icon>
-                                        </v-btn>
-                                        <v-toolbar-title>Tambah Produk</v-toolbar-title>
-                                        <v-spacer></v-spacer>
-                                        <v-toolbar-items>
-                                            <v-btn dark text @click="saveProduct" :loading="loading">
-                                                <v-icon>mdi-content-save</v-icon> Simpan
-                                            </v-btn>
-                                        </v-toolbar-items>
-                                    </v-toolbar>
-                                    <v-form ref="form" v-model="valid">
-                                        <v-card-title>
-                                            <small>*indicates required field</small>
-                                        </v-card-title>
-                                        <v-card-text>
-                                            <v-container :fluid="true">
-                                                <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-main>
+            <!-- Modal -->
+            <!-- Modal Save Product -->
+            <template>
+                <v-row justify="center">
+                    <v-dialog v-model="modalAdd" fullscreen hide-overlay transition="dialog-bottom-transition">
+                        <v-card>
+                            <v-toolbar dark color="primary">
+                                <v-btn icon dark @click="modalAddClose">
+                                    <v-icon>mdi-close</v-icon>
+                                </v-btn>
+                                <v-toolbar-title>Tambah Produk</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-items>
+                                    <v-btn dark text @click="saveProduct" :loading="loading">
+                                        <v-icon>mdi-content-save</v-icon> Simpan
+                                    </v-btn>
+                                </v-toolbar-items>
+                            </v-toolbar>
+                            <v-form ref="form" v-model="valid">
+                                <v-card-text>
+                                    <v-container :fluid="true">
+                                        <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
 
-                                                <v-row>
-                                                    <v-col cols="12">
-                                                        <v-text-field label="Nama Produk *" v-model="productName" :rules="textRules" required>
-                                                        </v-text-field>
-                                                        <v-text-field label="Harga *" v-model="productPrice" :rules="textRules" required>
-                                                        </v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12">
-                                                        <label>Gambar Produk</label>
-                                                        <!--<v-file-input
+                                        <v-row>
+                                            <v-col cols="12">
+                                                <v-text-field label="Nama Produk *" v-model="productName" :rules="textRules" required>
+                                                </v-text-field>
+                                                <v-text-field label="Harga *" v-model="productPrice" :rules="textRules" required>
+                                                </v-text-field>
+                                            </v-col>
+                                            <v-col cols="12">
+                                                <label>Gambar Produk</label>
+                                                <!--<v-file-input
                                                     v-model="foto"
                                                     accept="image/png, image/jpeg, image/bmp"
                                                     placeholder="Pick an avatar"
@@ -187,95 +198,110 @@
                                                     clearable="false"
                                                     ></v-file-input>
                                                     <img id='outputFotoReg' style="width:100px;">-->
-                                                        <v-image-input v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
-                                                    </v-col>
-                                                </v-row>
-                                            </v-container>
+                                                <v-image-input v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                </v-card-text>
+                            </v-form>
+                        </v-card>
+                    </v-dialog>
+                </v-row>
+            </template>     
+            <!-- End Modal Save Product -->
+                              
+            <!-- Modal Edit Product -->
+            <template>
+                <v-row justify="center">
+                    <v-dialog v-model="modalEdit" fullscreen hide-overlay transition="dialog-bottom-transition">
+                        <v-card>
+                            <v-toolbar dark color="primary">
+                                <v-btn icon dark @click="modalEditClose">
+                                    <v-icon>mdi-close</v-icon>
+                                </v-btn>
+                                <v-toolbar-title>Ubah Produk</v-toolbar-title>
+                                <v-spacer></v-spacer>
+                                <v-toolbar-items>
+                                    <v-btn dark text @click="updateProduct" :loading="loading">
+                                        <v-icon>mdi-content-save</v-icon> Simpan
+                                    </v-btn>
+                                </v-toolbar-items>
+                            </v-toolbar>
+                            <v-form ref="form" v-model="valid">
+                                <v-card-text>
+                                    <v-container :fluid="true">
+                                        <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
+                                        <v-row>
+                                            <v-col cols="12">
+                                                <v-text-field label="Nama Produk *" v-model="productNameEdit" :rules="textRules" required></v-text-field>
+                                            </v-col>
+                                            <v-col cols="12">
+                                                <v-text-field label="Harga *" v-model="productPriceEdit" :rules="textRules" required>
+                                                </v-text-field>
+                                            </v-col>
+                                            <v-col cols="12">
+                                                <label>Gambar Produk</label><br />
+                                                <template>
+                                                    <v-hover>
+                                                        <template v-slot:default="{ hover }">
+                                                            <v-card max-width="250">
+                                                                <v-img :src="mediaPathEdit"></v-img>
 
-                                        </v-card-text>
-                                    </v-form>
-                                </v-card>
-                            </v-dialog>
-                        </v-row>
-                    </template>     
-                    <!-- End Modal Save Product -->
-                     
-                                    
-                    <!-- Modal Edit Product -->
-                    <template>
-                        <v-row justify="center">
-                            <v-dialog v-model="modalEdit" persistent max-width="800px">
-                                <v-card>
-                                    <v-form ref="form" v-model="valid">
-                                        <v-card-title>
-                                            <span class="text-h5">Ubah Produk</span>
-                                        </v-card-title>
-                                        <v-card-text>
-                                            <v-container :fluid="true">
-                                                <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
-                                                <v-row>
-                                                    <v-col cols="12">
-                                                        <v-text-field label="Nama Produk *" v-model="productNameEdit" :rules="textRules" required></v-text-field>
-                                                    </v-col>
-                                                    <v-col cols="12">
-                                                        <v-text-field label="Harga *" v-model="productPriceEdit" :rules="textRules" required>
-                                                        </v-text-field>
-                                                    </v-col>
+                                                                <v-fade-transition>
+                                                                    <v-overlay v-if="hover" absolute color="#036358">
+                                                                        <v-btn>
+                                                                            <v-icon left>
+                                                                            mdi-delete
+                                                                            </v-icon> Hapus
+                                                                        </v-btn>
+                                                                    </v-overlay>
+                                                                </v-fade-transition>
+                                                            </v-card>
+                                                        </template>
+                                                    </v-hover>
+                                                </template>
+                                                <v-image-input v-if="productImageEdit == null" v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="" />
+                                            </v-col>
+                                        </v-row>
+                                    </v-container>
+                                </v-card-text>
+                            </v-form>
+                        </v-card>
+                    </v-dialog>
+                </v-row>
+            </template>  
+            <!-- End Modal Edit Product -->
+                            
+            <!-- Modal Delete Product -->
+            <template>
+                <v-row justify="center">
+                    <v-dialog v-model="modalDelete" persistent max-width="600px">
+                        <v-card class="pa-2">
+                            <v-card-title class="text-h5">Anda yakin ingin menghapus produk ini?</v-card-title>
+                            <v-card-actions>
+                                <v-spacer></v-spacer>
+                                <v-btn color="blue darken-1" text @click="modalDelete = false">Tidak</v-btn>
+                                 <v-btn color="blue darken-1" dark @click="deleteProduct" :loading="loading">Ya</v-btn>
+                                <v-spacer></v-spacer>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
+                </v-row>
+            </template>              
+            <!-- End Modal Delete Product -->
 
-                                                </v-row>
-                                            </v-container>
-                                            <small>*indicates required field</small>
-                                        </v-card-text>
-                                        <v-card-actions>
-                                            <v-spacer></v-spacer>
-                                            <v-btn color="blue darken-1" text @click="modalEditClose">Tutup</v-btn>
-                                             <v-btn color="primary darken-1" dark @click="updateProduct" :loading="loading">Update</v-btn>
-                                        </v-card-actions>
-                                    </v-form>
-                                </v-card>
-                            </v-dialog>
-                        </v-row>
-                    </template>  
-                    <!-- End Modal Edit Product -->
-                     
-                                    
-                    <!-- Modal Delete Product -->
-                    <template>
-                        <v-row justify="center">
-                            <v-dialog v-model="modalDelete" persistent max-width="600px">
-                                <v-card class="pa-2">
-                                    <v-card-title class="text-h5">Anda yakin ingin menghapus produk ini?</v-card-title>
-                                    <v-card-actions>
-                                        <v-spacer></v-spacer>
-                                        <v-btn color="blue darken-1" text @click="modalDelete = false">Tidak</v-btn>
-                                         <v-btn color="blue darken-1" dark @click="deleteProduct" :loading="loading">Ya</v-btn>
-                                        <v-spacer></v-spacer>
-                                    </v-card-actions>
-                                </v-card>
-                            </v-dialog>
-                        </v-row>
-                    </template>              
-                    <!-- End Modal Delete Product -->
-                     
-                    <v-snackbar v-model="snackbar" absolute top centered :color="snackbarType" :timeout="timeout">
-                        <span v-if="snackbar">{{snackbarMessage}}</span>
+            <v-snackbar v-model="snackbar" :color="snackbarType" :timeout="timeout">
+                <span v-if="snackbar">{{snackbarMessage}}</span>
+                <template v-slot:action="{ attrs }">
+                    <v-btn text v-bind="attrs" @click="snackbar = false">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>   
 
-                        <template v-slot:action="{ attrs }">
-                            <v-btn text v-bind="attrs" @click="snackbar = false">
-                                Close
-                            </v-btn>
-                        </template>
-                    </v-snackbar>   
-
-                    <v-snackbar v-model="ui.snackbar.fileInfo" :timeout="5000">
-                        <span v-if="fileInfo">{{ fileInfoMessage }}</span>
-                    </v-snackbar>
-
-                </v-container>
-            </v-main>
-            <v-footer color="indigo" app>
-                <span class="white--text">&copy; {{ new Date().getFullYear() }}</span>
-            </v-footer>
+            <v-snackbar v-model="ui.snackbar.fileInfo" :timeout="timeout">
+                <span v-if="fileInfo">{{ fileInfoMessage }}</span>
+            </v-snackbar>
         </v-app>
     </div>
      
@@ -313,7 +339,7 @@
         var vue = null;
         var computedVue = {
             mini() {
-                return (this.$vuetify.breakpoint.smAndDown) || this.toggleMini
+                return (this.$vuetify.breakpoint.smAndDown) || !this.toggleMini
             },
             buttonText() {
                 return !this.$vuetify.theme.dark ? 'Go Dark' : 'Go Light'
@@ -327,6 +353,10 @@
             headers: [{
                     text: 'ID',
                     value: 'product_id'
+                },
+                {
+                    text: 'FOTO',
+                    value: 'foto'
                 },
                 {
                     text: 'INFO PRODUK',
@@ -350,13 +380,16 @@
             modalAdd: false,
             productName: '',
             productPrice: '',
-            productImage: null,
+            productImage: '',
             foto: null,
             active: '',
+            media_path: null,
             modalEdit: false,
             productIdEdit: '',
             productNameEdit: '',
             productPriceEdit: '',
+            productImageEdit: '',
+            mediaPathEdit: null,
             modalDelete: false,
             productIdDelete: '',
             productNameDelete: '',
@@ -388,6 +421,9 @@
         var mountedVue = function() {}
         var watchVue = {}
         var methodsVue = {
+            toggleTheme() {
+                this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+            },
             modalAddOpen: function() {
                 this.modalAdd = true;
                 this.fotoID = '';
@@ -540,6 +576,8 @@
                 this.productIdEdit = product.product_id;
                 this.productNameEdit = product.product_name;
                 this.productPriceEdit = product.product_price;
+                this.productImageEdit = product.product_image;
+                this.mediaPathEdit = product.media_path;
             },
             modalEditClose: function() {
                 this.modalEdit = false;
@@ -551,7 +589,8 @@
                 this.loading = true;
                 axios.put(`product/update/${this.productIdEdit}`, {
                         product_name: this.productNameEdit,
-                        product_price: this.productPriceEdit
+                        product_price: this.productPriceEdit,
+                        product_image: this.productImageEdit
                     })
                     .then(res => {
                         // handle success
@@ -564,6 +603,7 @@
                             this.getProducts();
                             this.productName = '';
                             this.productPrice = '';
+                            this.productImage = null;
                             this.modalEdit = false;
                             this.$refs.form.resetValidation();
                         } else {
