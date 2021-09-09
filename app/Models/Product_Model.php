@@ -25,4 +25,9 @@ class Product_Model extends Model
         $query = $builder->get();
         return $query->getResultArray();
     }
+
+    public function findMedia($id)
+    {
+        return $this->getWhere(['product_image' => $id])->getRowArray(); 
+    }
 }

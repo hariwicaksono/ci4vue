@@ -37,7 +37,8 @@ $routes->put('product/update/(:segment)', 'Product::update/$1');
 $routes->delete('product/delete', 'Product::delete');
 $routes->put('product/setactive/(:segment)', 'Product::setActive/$1');
 $routes->put('product/setprice/(:segment)', 'Product::setPrice/$1');
-$routes->post('imageupload', 'ImageUpload::create');
+$routes->post('media/save', 'Media::create');
+$routes->delete('media/delete', 'Media::delete');
 
 /**
  * --------------------------------------------------------------------

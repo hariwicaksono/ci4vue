@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
@@ -198,7 +197,7 @@
                                                     clearable="false"
                                                     ></v-file-input>
                                                     <img id='outputFotoReg' style="width:100px;">-->
-                                                <v-image-input v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
+                                                <v-image-input v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -241,7 +240,7 @@
                                             </v-col>
                                             <v-col cols="12">
                                                 <label>Gambar Produk</label><br />
-                                                <template>
+                                                <template v-if="mediaPathEdit != null">
                                                     <v-hover>
                                                         <template v-slot:default="{ hover }">
                                                             <v-card max-width="250">
@@ -249,7 +248,7 @@
 
                                                                 <v-fade-transition>
                                                                     <v-overlay v-if="hover" absolute color="#036358">
-                                                                        <v-btn>
+                                                                        <v-btn @click="deleteMedia(productImageEdit)" :loading="loading">
                                                                             <v-icon left>
                                                                             mdi-delete
                                                                             </v-icon> Hapus
@@ -260,7 +259,7 @@
                                                         </template>
                                                     </v-hover>
                                                 </template>
-                                                <v-image-input v-if="productImageEdit == null" v-model="foto" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="" />
+                                                <v-image-input v-if="mediaPathEdit == null" v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -356,7 +355,7 @@
                 },
                 {
                     text: 'FOTO',
-                    value: 'foto'
+                    value: 'media_path'
                 },
                 {
                     text: 'INFO PRODUK',
@@ -380,10 +379,9 @@
             modalAdd: false,
             productName: '',
             productPrice: '',
-            productImage: '',
-            foto: null,
+            productImage: null,
             active: '',
-            media_path: null,
+            mediaPath: null,
             modalEdit: false,
             productIdEdit: '',
             productNameEdit: '',
@@ -412,7 +410,6 @@
                     fileInfo: false,
                 },
             },
-            fotoID: null
         }
         var createdVue = function() {
             axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -426,8 +423,7 @@
             },
             modalAddOpen: function() {
                 this.modalAdd = true;
-                this.fotoID = '';
-                this.foto = null;
+                this.productImage = null;
                 this.notifType = '';
                 this.textRules = [
                     v => !!v || 'Field is required',
@@ -441,8 +437,7 @@
             modalAddClose: function() {
                 this.productName = '';
                 this.productPrice = '';
-                this.fotoID = null;
-                this.foto = null;
+                this.productImage = null;
                 this.modalAdd = false;
                 this.$refs.form.resetValidation();
             },
@@ -476,9 +471,9 @@
             onFileInfo(value) {
                 this.fileInfo = value;
                 //this.ui.snackbar.fileInfo = true;
-                this.imageUpload(value);
+                this.uploadMedia(value);
             },
-            imageUpload: function(file) {
+            uploadMedia: function(file) {
                 var formData = new FormData()
                 // Split the base64 string in data and contentType
                 var block = file.split(";");
@@ -489,10 +484,10 @@
 
                 // Convert it to a blob to upload
                 var blob = b64toBlob(realData, contentType);
-                formData.append('foto', blob);
+                formData.append('productImage', blob);
                 axios({
                         method: 'post',
-                        url: '/imageupload',
+                        url: '/media/save',
                         data: formData,
                         headers: {
                             "Content-Type": "multipart/form-data"
@@ -505,7 +500,7 @@
                         if (data.status == true) {
                             this.ui.snackbar.fileInfo = true;
                             this.fileInfoMessage = data.message;
-                            this.fotoID = data.data
+                            this.productImage = data.data
                         } else {
                             this.notifType = "error";
                             this.notifMessage = data.message;
@@ -514,6 +509,29 @@
                     .catch(err => {
                         // handle error
                         console.log(err.response);
+                        this.loading = false
+                    })
+            },
+            // Delete Product
+            deleteMedia: function() {
+                this.loading = true;
+                axios.delete(`media/delete/${this.productImageEdit}`)
+                    .then(res => {
+                        // handle success
+                        this.loading = false
+                        var data = res.data;
+                        if (data.status == true) {
+                            this.snackbar = true;
+                            this.snackbarType = "success";
+                            this.snackbarMessage = data.message;
+                        } else {
+                            this.notifType = "error";
+                            this.notifMessage = data.message;
+                        }
+                    })
+                    .catch(err => {
+                        // handle error
+                        console.log(err);
                         this.loading = false
                     })
             },
@@ -526,7 +544,7 @@
                         data: {
                             product_name: this.productName,
                             product_price: this.productPrice,
-                            product_image: this.fotoID,
+                            product_image: this.productImage,
                         },
                         headers: {
                             "Content-Type": "application/json"
@@ -543,8 +561,7 @@
                             this.getProducts();
                             this.productName = '';
                             this.productPrice = '';
-                            this.fotoID = null;
-                            this.foto = null;
+                            this.productImage = null;
                             this.modalAdd = false;
                             this.$refs.form.resetValidation();
                         } else {
@@ -590,7 +607,7 @@
                 axios.put(`product/update/${this.productIdEdit}`, {
                         product_name: this.productNameEdit,
                         product_price: this.productPriceEdit,
-                        product_image: this.productImageEdit
+                        product_image: this.productImage
                     })
                     .then(res => {
                         // handle success
