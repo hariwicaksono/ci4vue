@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">  
@@ -177,27 +178,38 @@
                                 <v-card-text>
                                     <v-container :fluid="true">
                                         <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
-
                                         <v-row>
-                                            <v-col cols="12">
-                                                <v-text-field label="Nama Produk *" v-model="productName" :rules="textRules" required>
-                                                </v-text-field>
-                                                <v-text-field label="Harga *" v-model="productPrice" :rules="textRules" required>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Nama Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-text-field label="Nama Produk *" v-model="productName" :rules="textRules" outlined dense>
                                                 </v-text-field>
                                             </v-col>
-                                            <v-col cols="12">
-                                                <label>Gambar Produk</label>
-                                                <!--<v-file-input
-                                                    v-model="foto"
-                                                    accept="image/png, image/jpeg, image/bmp"
-                                                    placeholder="Pick an avatar"
-                                                    prepend-icon="mdi-camera"
-                                                    label="Avatar"
-                                                    @change="readFotoReg(event)"
-                                                    clearable="false"
-                                                    ></v-file-input>
-                                                    <img id='outputFotoReg' style="width:100px;">-->
-                                                <v-image-input v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Harga Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-text-field label="Harga *" v-model="productPrice" :rules="textRules" outlined dense>
+                                                </v-text-field>
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Deskripsi Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-textarea v-model="productDescription" counter maxlength="3000" outlined full-width single-line></v-textarea>
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Gambar Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-image-input v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" image-format="jpg,jpeg,png" overlay-padding="50px" @input="" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -212,7 +224,7 @@
             <!-- Modal Edit Product -->
             <template>
                 <v-row justify="center">
-                    <v-dialog v-model="modalEdit" fullscreen hide-overlay transition="dialog-bottom-transition">
+                    <v-dialog v-model="modalEdit" persistent fullscreen hide-overlay transition="dialog-bottom-transition">
                         <v-card>
                             <v-toolbar dark color="primary">
                                 <v-btn icon dark @click="modalEditClose">
@@ -240,7 +252,7 @@
                                             </v-col>
                                             <v-col cols="12">
                                                 <label>Gambar Produk</label><br />
-                                                <template v-if="mediaPathEdit != null">
+                                                <template v-if="show == false">
                                                     <v-hover>
                                                         <template v-slot:default="{ hover }">
                                                             <v-card max-width="250">
@@ -248,9 +260,9 @@
 
                                                                 <v-fade-transition>
                                                                     <v-overlay v-if="hover" absolute color="#036358">
-                                                                        <v-btn @click="deleteMedia(productImageEdit)" :loading="loading">
+                                                                        <v-btn color="red" dark @click="deleteMedia(productImageEdit)" :loading="loading">
                                                                             <v-icon left>
-                                                                            mdi-delete
+                                                                                mdi-delete
                                                                             </v-icon> Hapus
                                                                         </v-btn>
                                                                     </v-overlay>
@@ -259,7 +271,7 @@
                                                         </template>
                                                     </v-hover>
                                                 </template>
-                                                <v-image-input v-if="mediaPathEdit == null" v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
+                                                <v-image-input v-if="show" v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -293,14 +305,10 @@
                 <span v-if="snackbar">{{snackbarMessage}}</span>
                 <template v-slot:action="{ attrs }">
                     <v-btn text v-bind="attrs" @click="snackbar = false">
-                        Close
+                        <v-icon>mdi-close</v-icon>
                     </v-btn>
                 </template>
             </v-snackbar>   
-
-            <v-snackbar v-model="ui.snackbar.fileInfo" :timeout="timeout">
-                <span v-if="fileInfo">{{ fileInfoMessage }}</span>
-            </v-snackbar>
         </v-app>
     </div>
      
@@ -379,6 +387,7 @@
             modalAdd: false,
             productName: '',
             productPrice: '',
+            productDescription: '',
             productImage: null,
             active: '',
             mediaPath: null,
@@ -402,14 +411,7 @@
             snackbarType: '',
             snackbarMessage: '',
             outputFotoReg: null,
-            fileInfo: null,
-            fileInfoMessage: '',
-            ui: {
-                drawer: true,
-                snackbar: {
-                    fileInfo: false,
-                },
-            },
+            show: false,
         }
         var createdVue = function() {
             axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
@@ -437,6 +439,7 @@
             modalAddClose: function() {
                 this.productName = '';
                 this.productPrice = '';
+                this.productDescription = '';
                 this.productImage = null;
                 this.modalAdd = false;
                 this.$refs.form.resetValidation();
@@ -455,22 +458,8 @@
                         console.log(err);
                     })
             },
-            readFotoReg: function(event) {
-                var input = event.target;
-                // vue.fotoReg = input.files[0]
-                var reader = new FileReader();
-                reader.onload = function() {
-                    var dataURL = reader.result;
-                    var output = document.getElementById('outputFotoReg');
-                    output.src = dataURL;
-                };
-                var fileName = input.files[0].name;
-                reader.readAsDataURL(input.files[0]);
-                //this.imageUpload(input.files[0],fileName)
-            },
             onFileInfo(value) {
                 this.fileInfo = value;
-                //this.ui.snackbar.fileInfo = true;
                 this.uploadMedia(value);
             },
             uploadMedia: function(file) {
@@ -498,8 +487,9 @@
                         this.loading = false
                         var data = res.data;
                         if (data.status == true) {
-                            this.ui.snackbar.fileInfo = true;
-                            this.fileInfoMessage = data.message;
+                            this.snackbar = true;
+                            this.snackbarType = "success";
+                            this.snackbarMessage = data.message;
                             this.productImage = data.data
                         } else {
                             this.notifType = "error";
@@ -524,6 +514,7 @@
                             this.snackbar = true;
                             this.snackbarType = "success";
                             this.snackbarMessage = data.message;
+                            this.show = true;
                         } else {
                             this.notifType = "error";
                             this.notifMessage = data.message;
@@ -532,7 +523,8 @@
                     .catch(err => {
                         // handle error
                         console.log(err);
-                        this.loading = false
+                        this.loading = false;
+                        this.show = false;
                     })
             },
             // Save Product
@@ -544,6 +536,7 @@
                         data: {
                             product_name: this.productName,
                             product_price: this.productPrice,
+                            product_description: this.productDescription,
                             product_image: this.productImage,
                         },
                         headers: {
@@ -561,6 +554,7 @@
                             this.getProducts();
                             this.productName = '';
                             this.productPrice = '';
+                            this.productDescription = '';
                             this.productImage = null;
                             this.modalAdd = false;
                             this.$refs.form.resetValidation();
@@ -581,6 +575,7 @@
             // Get Item Edit Product
             editItem: function(product) {
                 this.modalEdit = true;
+                this.show = false;
                 this.notifType = "";
                 this.textRules = [
                     v => !!v || 'Field is required',

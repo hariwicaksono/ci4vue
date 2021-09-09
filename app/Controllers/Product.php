@@ -27,6 +27,7 @@ class Product extends ResourceController
             $data = [
                 'product_name' => $json->product_name,
                 'product_price' => $json->product_price,
+                'product_description' => $json->product_description,
                 'product_image' => $json->product_image,
                 'active' => 1
             ];
@@ -34,6 +35,7 @@ class Product extends ResourceController
             $data = [
                 'product_name' => $this->request->getPost('product_name'),
                 'product_price' => $this->request->getPost('product_price'),
+                'product_description' => $this->request->getPost('product_description'),
                 'product_image' => $this->request->getPost('product_image'),
                 'active' => 1
             ];
