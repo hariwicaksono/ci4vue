@@ -422,19 +422,20 @@
                 },
             ],
             products: [],
+            mediaID: '',
+            mediaPath: null,
             modalAdd: false,
             productName: '',
             productPrice: '',
             productDescription: '',
             productImage: null,
             active: '',
-            mediaPath: null,
             modalEdit: false,
             productIdEdit: '',
             productNameEdit: '',
             productPriceEdit: '',
             productDescriptionEdit: '',
-            productImageEdit: '',
+            productImageEdit: null,
             mediaPathEdit: null,
             modalDelete: false,
             productIdDelete: '',
@@ -529,7 +530,7 @@
                             this.snackbar = true;
                             this.snackbarType = "success";
                             this.snackbarMessage = data.message;
-                            this.productImage = data.data
+                            this.mediaID = data.data
                         } else {
                             this.notifType = "error";
                             this.notifMessage = data.message;
@@ -537,7 +538,7 @@
                     })
                     .catch(err => {
                         // handle error
-                        console.log(err.response);
+                        console.log(err);
                         this.loading = false
                     })
             },
@@ -561,7 +562,7 @@
                     })
                     .catch(err => {
                         // handle error
-                        console.log(err);
+                        console.log(err.response);
                         this.loading = false;
                         this.show = false;
                     })
@@ -576,7 +577,7 @@
                             product_name: this.productName,
                             product_price: this.productPrice,
                             product_description: this.productDescription,
-                            product_image: this.productImage,
+                            product_image: this.mediaID,
                         },
                         headers: {
                             "Content-Type": "application/json"
@@ -595,6 +596,7 @@
                             this.productPrice = '';
                             this.productDescription = '';
                             this.productImage = null;
+                            this.mediaID = '';
                             this.modalAdd = false;
                             this.$refs.form.resetValidation();
                         } else {
@@ -628,7 +630,6 @@
                 this.productNameEdit = product.product_name;
                 this.productPriceEdit = product.product_price;
                 this.productDescriptionEdit = product.product_description;
-                this.productImage = product.product_image;
                 this.productImageEdit = product.product_image;
                 this.mediaPathEdit = product.media_path;
             },
@@ -644,7 +645,7 @@
                         product_name: this.productNameEdit,
                         product_price: this.productPriceEdit,
                         product_description: this.productDescriptionEdit,
-                        product_image: this.productImage
+                        product_image: this.mediaID
                     })
                     .then(res => {
                         // handle success
