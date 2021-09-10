@@ -69,6 +69,7 @@ class Product extends ResourceController
             $data = [
                 'product_name' => $json->product_name,
                 'product_price' => $json->product_price,
+                'product_description' => $json->product_description,
                 'product_image' => $json->product_image,
             ];
         } else {

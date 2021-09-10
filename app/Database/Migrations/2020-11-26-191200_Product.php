@@ -23,6 +23,9 @@ class Product extends Migration
 				'type' => 'INT',
 				'constraint' => 11
 			],
+			'product_description' => [
+				'type' => 'TEXT'
+			],
 			'product_image' => [
 				'type' => 'INT',
 				'constraint' => 11

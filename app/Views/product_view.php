@@ -26,6 +26,25 @@
                 <v-toolbar-title>Title</v-toolbar-title>
                 <v-spacer></v-spacer>
                 <v-btn @click="toggleTheme" color="primary" class="mr-2">{{buttonText}}</v-btn>
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn dark icon v-bind="attrs" v-on="on">
+                            <v-icon>mdi-account-circle</v-icon>
+                        </v-btn>
+                    </template>
+
+                    <v-list>
+                        <v-list-item link href="/">
+                            <v-list-item-icon>
+                                <v-icon>mdi-logout</v-icon>
+                            </v-list-item-icon>
+
+                            <v-list-item-content>
+                                <v-list-item-title>Logout</v-list-item-title>
+                            </v-list-item-content>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
             </v-app-bar>
 
             <v-navigation-drawer v-model="sidebarMenu" app floating :permanent="sidebarMenu" :mini-variant.sync="mini">
@@ -102,7 +121,7 @@
                                                 <v-edit-dialog :return-value.sync="row.item.product_price" @save="setPrice(row.item)" @cancel="" @open="" @close="">
                                                     {{row.item.product_price}}
                                                     <template v-slot:input>
-                                                        <v-text-field v-model="row.item.product_price" single-line></v-text-field>
+                                                        <v-text-field v-model="row.item.product_price" type="number" single-line></v-text-field>
                                                     </template>
                                                 </v-edit-dialog>
                                             </td>
@@ -192,7 +211,7 @@
                                                 <v-label>Harga Produk</v-label>
                                             </v-col>
                                             <v-col cols="12" md="10">
-                                                <v-text-field label="Harga *" v-model="productPrice" :rules="textRules" outlined dense>
+                                                <v-text-field label="Harga *" v-model="productPrice" type="number" :rules="textRules" outlined dense>
                                                 </v-text-field>
                                             </v-col>
                                         </v-row>
@@ -209,7 +228,7 @@
                                                 <v-label>Gambar Produk</v-label>
                                             </v-col>
                                             <v-col cols="12" md="10">
-                                                <v-image-input v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" image-format="jpg,jpeg,png" overlay-padding="50px" @input="" />
+                                                <v-image-input v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -243,19 +262,38 @@
                                     <v-container :fluid="true">
                                         <v-alert v-if="notifType != ''" dismissible dense outlined :type="notifType">{{notifMessage}}</v-alert>
                                         <v-row>
-                                            <v-col cols="12">
-                                                <v-text-field label="Nama Produk *" v-model="productNameEdit" :rules="textRules" required></v-text-field>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Harga Produk</v-label>
                                             </v-col>
-                                            <v-col cols="12">
-                                                <v-text-field label="Harga *" v-model="productPriceEdit" :rules="textRules" required>
-                                                </v-text-field>
+                                            <v-col cols="12" md="10">
+                                                <v-text-field label="Nama Produk *" v-model="productNameEdit" :rules="textRules" outlined dense></v-text-field>
                                             </v-col>
-                                            <v-col cols="12">
-                                                <label>Gambar Produk</label><br />
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Harga Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-text-field label="Harga *" v-model="productPriceEdit" type="number" :rules="textRules" outlined dense></v-text-field>
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Deskripsi Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
+                                                <v-textarea v-model="productDescriptionEdit" counter maxlength="3000" outlined full-width single-line></v-textarea>
+                                            </v-col>
+                                        </v-row>
+                                        <v-row>
+                                            <v-col cols="12" md="2">
+                                                <v-label>Gambar Produk</v-label>
+                                            </v-col>
+                                            <v-col cols="12" md="10">
                                                 <template v-if="show == false">
                                                     <v-hover>
                                                         <template v-slot:default="{ hover }">
-                                                            <v-card max-width="250">
+                                                            <v-card max-width="450">
                                                                 <v-img :src="mediaPathEdit"></v-img>
 
                                                                 <v-fade-transition>
@@ -271,7 +309,7 @@
                                                         </template>
                                                     </v-hover>
                                                 </template>
-                                                <v-image-input v-if="show" v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
+                                                <v-image-input v-if="show == true" v-model="productImage" :clearable="true" :hide-actions="true" :image-width="700" :image-height="700" :full-height="true" :full-width="true" image-format="jpg,jpeg,png" overlay-padding="25px" @input="onFileInfo" />
                                             </v-col>
                                         </v-row>
                                     </v-container>
@@ -395,6 +433,7 @@
             productIdEdit: '',
             productNameEdit: '',
             productPriceEdit: '',
+            productDescriptionEdit: '',
             productImageEdit: '',
             mediaPathEdit: null,
             modalDelete: false,
@@ -588,6 +627,8 @@
                 this.productIdEdit = product.product_id;
                 this.productNameEdit = product.product_name;
                 this.productPriceEdit = product.product_price;
+                this.productDescriptionEdit = product.product_description;
+                this.productImage = product.product_image;
                 this.productImageEdit = product.product_image;
                 this.mediaPathEdit = product.media_path;
             },
@@ -602,6 +643,7 @@
                 axios.put(`product/update/${this.productIdEdit}`, {
                         product_name: this.productNameEdit,
                         product_price: this.productPriceEdit,
+                        product_description: this.productDescriptionEdit,
                         product_image: this.productImage
                     })
                     .then(res => {
@@ -613,9 +655,6 @@
                             this.snackbarType = "success";
                             this.snackbarMessage = data.message;
                             this.getProducts();
-                            this.productName = '';
-                            this.productPrice = '';
-                            this.productImage = null;
                             this.modalEdit = false;
                             this.$refs.form.resetValidation();
                         } else {
