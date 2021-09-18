@@ -112,7 +112,7 @@
                                         <tr>
                                             <td>{{row.item.product_id}}</td>
                                             <td>
-                                                <v-avatar size="60px" rounded><img :src="row.item.media_path" /></v-avatar>
+                                                <v-avatar size="60px" rounded><img v-bind:src="'../' + row.item.media_path" /></v-avatar>
                                             </td>
                                             <td>
                                                 <h3>{{row.item.product_name}}</h3>
@@ -294,7 +294,7 @@
                                                     <v-hover>
                                                         <template v-slot:default="{ hover }">
                                                             <v-card max-width="450">
-                                                                <v-img :src="mediaPathEdit"></v-img>
+                                                                <v-img v-model="mediaID" v-bind:src="'../' + mediaPathEdit" /></v-img>
 
                                                                 <v-fade-transition>
                                                                     <v-overlay v-if="hover" absolute color="#036358">
@@ -487,7 +487,7 @@
             // Get Product
             getProducts: function() {
                 this.loading = true;
-                axios.get('product/getproduct')
+                axios.get('/product/getproduct')
                     .then(res => {
                         // handle success
                         this.loading = false;
@@ -545,7 +545,7 @@
             // Delete Product
             deleteMedia: function() {
                 this.loading = true;
-                axios.delete(`media/delete/${this.productImageEdit}`)
+                axios.delete(`/media/delete/${this.mediaID}`)
                     .then(res => {
                         // handle success
                         this.loading = false
@@ -630,7 +630,7 @@
                 this.productNameEdit = product.product_name;
                 this.productPriceEdit = product.product_price;
                 this.productDescriptionEdit = product.product_description;
-                this.productImageEdit = product.product_image;
+                this.mediaID = product.product_image;
                 this.mediaPathEdit = product.media_path;
             },
             modalEditClose: function() {
@@ -641,7 +641,7 @@
             //Update Product
             updateProduct: function() {
                 this.loading = true;
-                axios.put(`product/update/${this.productIdEdit}`, {
+                axios.put(`/product/update/${this.productIdEdit}`, {
                         product_name: this.productNameEdit,
                         product_price: this.productPriceEdit,
                         product_description: this.productDescriptionEdit,
@@ -682,7 +682,7 @@
             // Delete Product
             deleteProduct: function() {
                 this.loading = true;
-                axios.delete(`product/delete/${this.productIdDelete}`)
+                axios.delete(`/product/delete/${this.productIdDelete}`)
                     .then(res => {
                         // handle success
                         this.loading = false;
@@ -711,7 +711,7 @@
                 this.loading = true;
                 this.productIdEdit = product.product_id;
                 this.productPrice = product.product_price;
-                axios.put(`product/setprice/${this.productIdEdit}`, {
+                axios.put(`/product/setprice/${this.productIdEdit}`, {
                         product_price: this.productPrice,
                     })
                     .then(res => {
@@ -737,7 +737,7 @@
                 this.loading = true;
                 this.productIdEdit = product.product_id;
                 this.active = product.active;
-                axios.put(`product/setactive/${this.productIdEdit}`, {
+                axios.put(`/product/setactive/${this.productIdEdit}`, {
                         active: this.active,
                     })
                     .then(res => {
